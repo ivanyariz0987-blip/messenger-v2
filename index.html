@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1769e0">
+  <title>Мессенджер</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✉</span><div><h1>Мессенджер</h1><p id="statusLine">Тестовая версия</p></div></div>
+      <button id="profileButton" class="avatar-button" aria-label="Профиль">Я</button>
+    </header>
+    <section id="authView" class="auth-view">
+      <div class="welcome-icon">✉</div>
+      <h2>Добро пожаловать</h2>
+      <p class="muted">Войди, чтобы начать переписываться</p>
+      <form id="loginForm">
+        <label for="nameInput">Имя в мессенджере</label>
+        <input id="nameInput" type="text" maxlength="32" placeholder="Например, Иван" required>
+        <button class="primary wide" type="submit">Войти в тестовый чат</button>
+      </form>
+      <p class="fine-print">Тестовый вход без SMS. Для проверки связи между устройствами все участники пока видят общий чат. Не отправляй конфиденциальные данные.</p>
+    </section>
+    <section id="chatView" class="chat-layout hidden">
+      <aside class="sidebar">
+        <div class="sidebar-heading"><h2>Сообщения</h2><span class="beta-label">ТЕСТ</span></div>
+        <div id="myIdentity" class="identity"></div>
+        <div class="search-wrap"><input id="searchInput" type="search" placeholder="Поиск по сообщениям"></div>
+        <div id="chatList" class="chat-list"></div>
+        <div class="sidebar-bottom"><span class="demo-dot"></span><span id="modeLabel">Подключение к базе…</span></div>
+      </aside>
+      <section class="conversation">
+        <div id="emptyState" class="empty-state hidden"><div class="empty-art">✉</div><h2>Твоя переписка</h2><p>Выбери общий чат.</p></div>
+        <div id="activeChat" class="active-chat">
+          <header class="conversation-header">
+            <button id="backButton" class="icon-button back-button" aria-label="Назад к чатам">‹</button>
+            <div class="peer-avatar">М</div>
+            <div class="peer-info"><h2>Общий чат</h2><p id="peerSub">Сообщения в реальном времени</p></div>
+            <span id="connectionBadge" class="connection-badge">Подключение</span>
+          </header>
+          <div id="messages" class="messages" aria-live="polite"><div class="day-label">Подключаемся к серверу…</div></div>
+          <form id="messageForm" class="composer">
+            <input id="messageInput" type="text" maxlength="2000" placeholder="Написать сообщение…" autocomplete="off" required>
+            <button class="send-button" type="submit" aria-label="Отправить">➤</button>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+  <dialog id="profileDialog" class="dialog">
+    <form method="dialog"><div class="dialog-heading"><h2>Профиль</h2><button type="button" id="closeProfile" class="icon-button">×</button></div>
+      <div id="profileDetails" class="profile-details"></div><button id="logoutButton" class="secondary wide" type="button">Выйти</button>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
