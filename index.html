@@ -18,11 +18,15 @@
       <h2>Добро пожаловать</h2>
       <p class="muted">Войди, чтобы начать переписываться</p>
       <form id="loginForm">
-        <label for="nameInput">Имя в мессенджере</label>
-        <input id="nameInput" type="text" maxlength="32" placeholder="Например, Иван" required>
-        <button class="primary wide" type="submit">Войти в тестовый чат</button>
+        <div id="nameField"><label for="nameInput">Имя в мессенджере</label><input id="nameInput" type="text" maxlength="32" placeholder="Например, Иван"></div>
+        <label for="emailInput">Электронная почта</label>
+        <input id="emailInput" type="email" autocomplete="email" placeholder="name@example.com" required>
+        <label for="passwordInput">Пароль</label>
+        <input id="passwordInput" type="password" minlength="8" autocomplete="current-password" placeholder="Не менее 8 символов" required>
+        <button id="authSubmit" class="primary wide" type="submit">Войти</button>
       </form>
-      <p class="fine-print">Тестовый вход без SMS. Для проверки связи между устройствами все участники пока видят общий чат. Не отправляй конфиденциальные данные.</p>
+      <button id="authSwitch" class="secondary wide" type="button">Создать новый аккаунт</button>
+      <p class="fine-print">Аккаунт защищён паролем. Все участники пока видят общий чат. Не отправляй конфиденциальные данные.</p>
     </section>
     <section id="chatView" class="chat-layout hidden">
       <aside class="sidebar">

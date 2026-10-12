@@ -51,25 +51,63 @@ async function startRealtime(){
       else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")setConnected(false,"Нет связи");
     });
 }
-async function signIn(name){
-  if(!READY){toast("Сначала вставь URL и ключ Supabase в app.js");return;}
+let authMode = "login";
+function setAuthMode(mode){
+  authMode=mode;
+  const registering=mode==="signup";
+  $("nameField").classList.toggle("hidden",!registering);
+  $("nameInput").required=registering;
+  $("passwordInput").autocomplete=registering?"new-password":"current-password";
+  $("authSubmit").textContent=registering?"Создать аккаунт":"Войти";
+  $("authSwitch").textContent=registering?"У меня уже есть аккаунт":"Создать новый аккаунт";
+}
+async function enterChat(user, fallbackName="Пользователь"){
+  currentUser=user;
+  profileName=(user.user_metadata?.display_name||fallbackName||user.email?.split("@")[0]||"Пользователь").trim().slice(0,32);
+  const {error:profileError}=await supabase.from("profiles").upsert({id:user.id,display_name:profileName},{onConflict:"id"});
+  if(profileError)throw profileError;
+  showApp();setConnected(false,"Подключение");await loadMessages();await startRealtime();
+  toast("Вы вошли в мессенджер");
+}
+async function handleAuth(){
+  if(!READY){toast("Не настроено подключение к Supabase");return;}
+  const email=$("emailInput").value.trim();
+  const password=$("passwordInput").value;
+  const name=$("nameInput").value.trim().slice(0,32)||email.split("@")[0];
+  if(password.length<8){toast("Пароль должен содержать не менее 8 символов");return;}
+  $("authSubmit").disabled=true;
   try{
     supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-    const {data:sessionData}=await supabase.auth.getSession();
-    let user=sessionData.session?.user;
-    if(!user){
-      const {data,error}=await supabase.auth.signInAnonymously();
+    if(authMode==="signup"){
+      const {data,error}=await supabase.auth.signUp({email,password,options:{data:{display_name:name}}});
       if(error)throw error;
-      user=data.user;
+      if(data.session&&data.user){await enterChat(data.user,name);}
+      else{toast("Аккаунт создан. Проверь почту и подтверди адрес, затем войди.");setAuthMode("login");}
+    }else{
+      const {data,error}=await supabase.auth.signInWithPassword({email,password});
+      if(error)throw error;
+      await enterChat(data.user,data.user.user_metadata?.display_name||name);
     }
-    currentUser=user;profileName=name.trim().slice(0,32)||"Пользователь";
-    const {error:profileError}=await supabase.from("profiles").upsert({id:user.id,display_name:profileName},{onConflict:"id"});
-    if(profileError)throw profileError;
-    showApp();setConnected(false,"Подключение");await loadMessages();await startRealtime();
-    toast("Подключено к общему чату");
-  }catch(err){console.error(err);toast("Ошибка входа: "+(err.message||"проверь настройки Supabase"));}
+  }catch(err){
+    console.error(err);
+    const msg=err.message||"Неизвестная ошибка";
+    toast(msg.toLowerCase().includes("invalid login")?"Неверная почта или пароль":msg);
+  }finally{$("authSubmit").disabled=false;}
 }
-$("loginForm").addEventListener("submit",e=>{e.preventDefault();signIn($("nameInput").value);});
+$("loginForm").addEventListener("submit",e=>{e.preventDefault();handleAuth();});
+$("authSwitch").addEventListener("click",()=>setAuthMode(authMode==="login"?"signup":"login"));
+// Restore a signed-in account after reopening the page.
+(async()=>{
+  if(!READY)return;
+  try{
+    supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    const {data}=await supabase.auth.getSession();
+    if(data.session?.user){
+      if(data.session.user.is_anonymous){await supabase.auth.signOut();}
+      else await enterChat(data.session.user);
+    }
+  }catch(err){console.error(err);}
+})();
 $("messageForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!supabase||!currentUser)return;
   const input=$("messageInput"),body=input.value.trim();if(!body)return;
